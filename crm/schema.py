@@ -3,6 +3,8 @@ from graphene_django import DjangoObjectType
 from .models import Customer, Product, Order
 from django.core.validators import RegexValidator
 from django.db import transaction
+from graphene_django.filter import DjangoFilterConnectionField
+from .filters import CustomerFilter, ProductFilter, OrderFilter
 
 # GraphQL Types
 class CustomerType(DjangoObjectType):
@@ -125,6 +127,9 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     hello = graphene.String()
+    all_customers = DjangoFilterConnectionField(CustomerType, filterset_class=CustomerFilter)
+    all_products = DjangoFilterConnectionField(ProductType, filterset_class=ProductFilter)
+    all_orders = DjangoFilterConnectionField(OrderType, filterset_class=OrderFilter)
 
     def resolve_hello(root, info):
         return "Hello, GraphQL!"
