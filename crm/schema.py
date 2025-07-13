@@ -133,3 +133,33 @@ class Query(graphene.ObjectType):
 
     def resolve_hello(root, info):
         return "Hello, GraphQL!"
+    
+    import graphene
+from crm.models import Product
+
+class ProductType(graphene.ObjectType):
+    id = graphene.ID()
+    name = graphene.String()
+    stock = graphene.Int()
+
+class UpdateLowStockProducts(graphene.Mutation):
+    success = graphene.String()
+    products = graphene.List(ProductType)
+
+    def mutate(self, info):
+        low_stock_products = Product.objects.filter(stock__lt=10)
+        updated_products = []
+        for prod in low_stock_products:
+            prod.stock += 10
+            prod.save()
+            updated_products.append(prod)
+        return UpdateLowStockProducts(
+            success="Low-stock products restocked!",
+            products=updated_products
+        )
+
+class Mutation(graphene.ObjectType):
+    update_low_stock_products = UpdateLowStockProducts.Field()
+
+schema = graphene.Schema(mutation=Mutation)
+
